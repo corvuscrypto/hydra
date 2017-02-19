@@ -32,5 +32,10 @@ func newSlaveConn(t *net.TCPConn) (conn *slaveConn, err error) {
 
 type slave struct {
 	nonce      []byte
-	connection slaveConn
+	connection *slaveConn
+}
+
+func newSlave(conn *net.TCPConn) (s *slave, err error) {
+	s.connection, err = newSlaveConn(conn)
+	return
 }
