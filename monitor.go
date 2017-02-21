@@ -37,6 +37,7 @@ type event struct {
 //NewEvent creates a new event
 //NOTE: possible refactor
 func NewEvent(t eventType, source, details string) (evt *event) {
+	evt = new(event)
 	evt.Type = t
 	evt.Timestamp = time.Now()
 	evt.ID = eventCount
@@ -68,4 +69,5 @@ func init() {
 	//init the vars for the global monitor instance
 	globalMonitor.channel = make(chan *event, MonitorChanBufSize)
 	globalMonitor.EventCounts = make(map[eventType]uint)
+	go globalMonitor.waitForEvents()
 }

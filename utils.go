@@ -11,9 +11,11 @@ type packetID uint64
 var packetPerturbator uint64
 
 func newPacketID() packetID {
-	perturbator := atomic.AddUint64(&packetPerturbator, uint64(1)) % 100
-	timestamp := uint64(time.Now().Unix())
-	return packetID((timestamp * 100) + perturbator)
+	perturbator := atomic.AddUint64(&packetPerturbator, uint64(1)) % 1000
+	now := time.Now()
+	micro := uint64(now.Nanosecond()/1000) * 1000
+	timestamp := uint64(now.Unix()*1000000000) + micro
+	return packetID(timestamp + perturbator)
 }
 
 func receivePacket(d *gob.Decoder, expectedPacket interface{}) error {
