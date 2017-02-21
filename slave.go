@@ -26,6 +26,7 @@ func (s slaveConn) Read(dst []byte) (n int, err error) {
 func newSlaveConn(t *net.TCPConn) (conn *slaveConn, err error) {
 	conn = new(slaveConn)
 	conn.tcpConn = t
+	//create a new private key for exchange
 	conn.cipherBlock, err = cipher.NewGCM(globalCipher)
 	return
 }
