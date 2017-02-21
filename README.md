@@ -4,6 +4,16 @@ This master acts as sort of a load balancer for data calls
 
 Built in Event logger as well for quick graphical analysis
 
+# Configuration
+
+Configuration files are expected to be in YAML format. This program checks for configuration files in the same directory
+it is being run from and checks the following paths in order:
+
+ - ./config.yml
+ - ./config.yaml
+
+Full config specs to come!
+
 # Slave Communication
 
 ## Basics

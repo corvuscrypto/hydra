@@ -36,8 +36,8 @@ func init() {
 	}
 	configData, _ := ioutil.ReadAll(file)
 	err := yaml.Unmarshal(configData, &globalConfig)
-	fmt.Println("Unable to read config file!", err)
 	if err != nil {
+		fmt.Println("Unable to read config file!", err)
 		os.Exit(1)
 	}
 }
