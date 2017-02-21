@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/cipher"
+	"crypto/sha256"
 	"encoding/gob"
 	"net"
 )
@@ -49,18 +50,33 @@ type slave struct {
 	resources  []string
 }
 
-func (s *slave) sendChallenge() {
+func (s *slave) sendChallenge() (err error) {
 	challengePacket := slaveDiscoveryChallenge{
 		newPacket(SlaveDiscoveryChallenge),
 		s.nonce,
 	}
-	err := s.encoder.Encode(challengePacket)
+	err = s.encoder.Encode(challengePacket)
 	if err != nil {
 		err2 := s.connection.tcpConn.Close()
 		if err2 != nil {
 			panic(err)
 		}
 	}
+	return
+}
+
+func (s slave) getChallengeResponse() (ok bool, err error) {
+	challengeResponse := new(slaveDiscoveryChallengeResponse)
+	err = s.encoder.Encode(challengeResponse)
+	if err != nil {
+		err2 := s.connection.tcpConn.Close()
+		if err2 != nil {
+			panic(err)
+		}
+	}
+	expectedHash := sha256.Sum256(append(s.nonce, secret...))
+	ok = string(challengeResponse.Hash) == string(expectedHash[:])
+	return
 }
 
 func newSlave(conn *net.TCPConn, id string, resources []string) (s *slave, err error) {

@@ -61,8 +61,7 @@ type slaveDiscoveryChallenge struct {
 
 type slaveDiscoveryChallengeResponse struct {
 	slavePacket
-	Nonce  []byte
-	Secret []byte
+	Hash []byte
 }
 
 type slaveDiscoveryAccept struct {

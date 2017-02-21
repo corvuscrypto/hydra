@@ -23,13 +23,8 @@ func handleDiscovery(conn *net.TCPConn) {
 	}
 
 	//Send Challenge
-	challengePacket := slaveDiscoveryChallenge{
-		newPacket(SlaveDiscoveryChallenge),
-		ns.nonce,
-	}
-	err = ns.encoder.Encode(challengePacket)
+	err = ns.sendChallenge()
 	if err != nil {
-		conn.Close()
 		return
 	}
 }
