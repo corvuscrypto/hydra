@@ -13,6 +13,15 @@ Slave communication occurs with the following protocols:
   1. Master sends a Ping request to the Slave
   2. Slave responds to Ping with an Acknowledgement
 
+#### Slave Discovery
+  1. Slave sends a Discovery request to Master along with its unique ID
+  2. Master sends its public key and waits for the slave's public key so both can create a shared secret.
+  3. After secure symmetric encryption is obtained a cryptographically random nonce is generated and a Challenge packet
+  is sent.
+  4. The Slave then combines the nonce (as salt) to the pre-determined secret agreed upon out of band and hashes this,
+  sending the hash back as a Challenge Response.
+  5. If the hash matches what is expected, then an Accept packet is sent, otherwise a Rejected packet is sent.
+
 #### Slave Data Request (small amount of data)
   1. Master sends a Data request packet
   2. Slave responds with a Data response packet with the `dataLeft == 0` OR an Error packet if
