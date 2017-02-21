@@ -15,8 +15,7 @@ func (s server) listenDiscovery() {
 		if err != nil {
 			log.Println(err)
 		}
-		defer conn.Close()
-		globalMonitor.addEvent(NewEvent(EventSlaveOffer, conn.RemoteAddr().String(), "listenDiscovery"))
+		go handleDiscovery(conn)
 	}
 }
 

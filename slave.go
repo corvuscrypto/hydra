@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/cipher"
+	"encoding/gob"
 	"net"
 )
 
@@ -27,16 +28,28 @@ func newSlaveConn(t *net.TCPConn) (conn *slaveConn, err error) {
 	conn = new(slaveConn)
 	conn.tcpConn = t
 	//create a new private key for exchange
-	conn.cipherBlock, err = cipher.NewGCM(globalCipher)
+	priv, X, Y, err := createNewKey()
+	if err != nil {
+		return nil, err
+	}
+	conn.cipherBlock, err = createNewCipher(priv, X, Y)
 	return
 }
 
 type slave struct {
+	id         string
 	nonce      []byte
 	connection *slaveConn
+	encoder    *gob.Encoder
+	decoder    *gob.Decoder
+	resources  []string
 }
 
-func newSlave(conn *net.TCPConn) (s *slave, err error) {
+func newSlave(conn *net.TCPConn, id string, resources []string) (s *slave, err error) {
 	s.connection, err = newSlaveConn(conn)
+	s.id = id
+	s.resources = resources
+	s.decoder = gob.NewDecoder(s.connection)
+	s.encoder = gob.NewEncoder(s.connection)
 	return
 }
