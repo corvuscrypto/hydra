@@ -7,6 +7,9 @@ type slavePacketType uint8
 const (
 	SlavePing slavePacketType = iota
 	SlaveAcknowledgement
+	SlaveDiscoveryRequest
+	SlaveDiscoveryAccept
+	SlaveDiscoveryReject
 	SlaveDataRequest
 	SlaveDataContinue
 	SlaveDataResponse
@@ -28,6 +31,40 @@ type slavePingPacket struct {
 type slaveAcknowledgementPacket struct {
 	slavePacket
 	ID packetID
+}
+
+type slaveKeyTransfer struct {
+	slavePacket
+	X     []byte
+	Y     []byte
+	XSign int
+	YSign int
+}
+
+type slaveDiscoveryRequest struct {
+	slavePacket
+	SlaveID   string
+	Resources []string
+}
+
+type slaveDiscoveryChallenge struct {
+	slavePacket
+	Nonce []byte
+}
+
+type slaveDiscoveryChallengeResponse struct {
+	slavePacket
+	Nonce  []byte
+	Secret []byte
+}
+
+type slaveDiscoveryAccept struct {
+	slavePacket
+}
+
+type slaveDiscoveryReject struct {
+	slavePacket
+	Reason string
 }
 
 type slaveDataRequestPacket struct {
