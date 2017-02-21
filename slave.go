@@ -24,6 +24,10 @@ func (s slaveConn) Read(dst []byte) (n int, err error) {
 	return
 }
 
+func (s *slaveConn) Close() error {
+	return s.tcpConn.Close()
+}
+
 func newSlaveConn(t *net.TCPConn) (conn *slaveConn, err error) {
 	conn = new(slaveConn)
 	conn.tcpConn = t
@@ -43,6 +47,20 @@ type slave struct {
 	encoder    *gob.Encoder
 	decoder    *gob.Decoder
 	resources  []string
+}
+
+func (s *slave) sendChallenge() {
+	challengePacket := slaveDiscoveryChallenge{
+		newPacket(SlaveDiscoveryChallenge),
+		s.nonce,
+	}
+	err := s.encoder.Encode(challengePacket)
+	if err != nil {
+		err2 := s.connection.tcpConn.Close()
+		if err2 != nil {
+			panic(err)
+		}
+	}
 }
 
 func newSlave(conn *net.TCPConn, id string, resources []string) (s *slave, err error) {

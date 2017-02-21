@@ -8,6 +8,7 @@ const (
 	SlavePing slavePacketType = iota
 	SlaveAcknowledgement
 	SlaveDiscoveryRequest
+	SlaveDiscoveryChallenge
 	SlaveDiscoveryAccept
 	SlaveDiscoveryReject
 	SlaveDataRequest
@@ -17,6 +18,12 @@ const (
 	SlaveStatusResponse
 	SlaveErrorResponse
 )
+
+func newPacket(t slavePacketType) slavePacket {
+	basePacket := new(slavePacket)
+	basePacket.Type = t
+	return *basePacket
+}
 
 //Base struct to compose all other packets
 type slavePacket struct {
