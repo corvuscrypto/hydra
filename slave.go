@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/cipher"
 	"encoding/gob"
+	"math/big"
 	"net"
 	"time"
 )
@@ -32,12 +33,50 @@ func (s *slaveConn) Close() error {
 func newSlaveConn(t *net.TCPConn) (conn *slaveConn, err error) {
 	conn = new(slaveConn)
 	conn.tcpConn = t
+
+	//create a raw gob (d)e(n)coder
+	decoder := gob.NewDecoder(t)
+	encoder := gob.NewEncoder(t)
+
 	//create a new private key for exchange
 	priv, X, Y, err := createNewKey()
 	if err != nil {
 		return nil, err
 	}
-	conn.cipherBlock, err = createNewCipher(priv, X, Y)
+
+	keyTransferPacket := &slaveKeyTransfer{
+		newPacket(SlaveKeyTransfer),
+		X.Bytes(),
+		Y.Bytes(),
+		X.Sign(),
+		Y.Sign(),
+	}
+
+	//receive the slave's public key
+	slaveKeyPacket := new(slaveKeyTransfer)
+	err = decoder.Decode(slaveKeyPacket)
+	if err != nil {
+		t.Close()
+		return
+	}
+	//send the public key
+	err = encoder.Encode(keyTransferPacket)
+	if err != nil {
+		t.Close()
+		return
+	}
+
+	//reconstruct public key from the packet rx'd
+	slaveX := big.NewInt(0).SetBytes(slaveKeyPacket.X)
+	if slaveKeyPacket.XSign == -1 {
+		slaveX = slaveX.Neg(slaveX)
+	}
+	slaveY := big.NewInt(0).SetBytes(slaveKeyPacket.Y)
+	if slaveKeyPacket.YSign == -1 {
+		slaveY = slaveY.Neg(slaveY)
+	}
+
+	conn.cipherBlock, err = createNewCipher(priv, slaveX, slaveY)
 	return
 }
 

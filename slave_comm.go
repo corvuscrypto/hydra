@@ -7,6 +7,7 @@ type slavePacketType uint8
 const (
 	SlavePing slavePacketType = iota
 	SlaveAcknowledgement
+	SlaveKeyTransfer
 	SlaveDiscoveryRequest
 	SlaveDiscoveryChallenge
 	SlaveDiscoveryAccept
