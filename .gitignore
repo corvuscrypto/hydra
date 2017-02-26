@@ -1,0 +1,5 @@
+#ignore the binary
+hydrad
+#ignore any configs
+*.yml
+*.yaml
