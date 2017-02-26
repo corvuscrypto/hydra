@@ -59,3 +59,6 @@ Slave communication occurs with the following protocols:
   is rejected as a new member of the network.
 
   NOTE: Before I get a lot of flack from security experts. The reason I decided against using the standard TLS/SSL methods is to curtail the use of certificates and instead use a shared pre-determined secret. This allows the Master and all Slaves to generate a new private key each time they are initialized thus ensuring ease of maintenance and also at the same time ensure unique, secure, and authenticated channels of communication per each slave.
+
+  AND YES THERE IS CURRENTLY SUSCEPTIBILITY TO A MAN-IN-THE-MIDDLE ATTACK! But don't fret, I'm fixin' this soon. Just
+  let me get through the basic protocol development.
