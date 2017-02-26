@@ -94,11 +94,14 @@ func handleDiscovery(conn *net.TCPConn) {
 		return
 	}
 
-	//We send an acceptance if everything is okay and add this slave to our registry
+	//We send an acceptance if everything is okay
 	err = sendDiscoveryAcceptance(ns)
 	if err != nil {
 		abortConnection(ns)
 		return
 	}
-
+	// add this slave to our registry
+	globalRegistry.addSlave(ns)
+	// now begin the slave service routine
+	go ns.waitAndMaintain()
 }

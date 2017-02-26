@@ -16,3 +16,9 @@ func (r *registry) removeSlave(slaveID string) {
 	slave.destroy()
 	delete(r.slaveMap, slaveID)
 }
+
+var globalRegistry = new(registry)
+
+func init() {
+	globalRegistry.slaveMap = make(map[string]*slave)
+}

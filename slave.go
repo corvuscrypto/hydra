@@ -4,6 +4,7 @@ import (
 	"crypto/cipher"
 	"encoding/gob"
 	"net"
+	"time"
 )
 
 type slaveConn struct {
@@ -41,17 +42,29 @@ func newSlaveConn(t *net.TCPConn) (conn *slaveConn, err error) {
 }
 
 type slave struct {
-	id         string
-	nonce      []byte
-	connection *slaveConn
-	encoder    *gob.Encoder
-	decoder    *gob.Decoder
-	resources  []string
+	id             string
+	nonce          []byte
+	connection     *slaveConn
+	encoder        *gob.Encoder
+	decoder        *gob.Decoder
+	requestChannel chan interface{}
+	resources      []string
 }
 
 func (s *slave) destroy() {
 	s.connection.Close()
 	return
+}
+
+func (s *slave) waitAndMaintain() {
+	for {
+		select {
+		case <-s.requestChannel:
+			//Handle a request
+		case <-time.Tick(time.Duration(globalConfig.Server.HeartbeatInterval) * time.Second):
+			// send a heartbeat just to check if things are okay
+		}
+	}
 }
 
 func newSlave(conn *net.TCPConn, id string, resources []string) (s *slave, err error) {
