@@ -13,10 +13,11 @@ var paths = []string{"./config.yml", "./config.yaml"}
 type config struct {
 	Security struct {
 		SecretKey string
+		PFS       bool
 	}
 	Server struct {
 		DiscoveryPort,
-		DataRequestPort int
+		FrontendPort int
 	}
 }
 
