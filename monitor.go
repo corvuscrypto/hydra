@@ -15,7 +15,7 @@ type eventType uint8
 
 //Event Types
 const (
-	EventIncomingRequest eventType = iota
+	EventIncomingDataRequest eventType = iota
 	EventRequestForward
 	EventSlaveOffer
 	EventSlaveAccept
