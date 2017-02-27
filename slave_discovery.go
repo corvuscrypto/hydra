@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/sha256"
 	"encoding/gob"
+	"log"
 	"net"
 )
 
@@ -57,6 +58,8 @@ func sendDiscoveryAcceptance(s *slave) (err error) {
 func handleDiscovery(conn *net.TCPConn) {
 	//attempt to handle the offer
 	decoder := gob.NewDecoder(conn)
+
+	log.Println("Receiving Discovery Offer")
 	discoveryPacket := new(slaveDiscoveryRequest)
 	err := decoder.Decode(&discoveryPacket)
 	if err != nil {
@@ -70,7 +73,7 @@ func handleDiscovery(conn *net.TCPConn) {
 		conn.Close()
 		return
 	}
-
+	log.Println("Sending challenge")
 	//Send Challenge
 	err = sendChallenge(ns)
 	if err != nil {
@@ -78,6 +81,7 @@ func handleDiscovery(conn *net.TCPConn) {
 		return
 	}
 
+	log.Println("Awaiting challenge Response")
 	//Receive Challenge Response
 	verified, err := receiveChallengeResponse(ns)
 	if err != nil {

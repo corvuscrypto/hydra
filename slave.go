@@ -2,7 +2,9 @@ package main
 
 import (
 	"crypto/cipher"
+	"encoding/binary"
 	"encoding/gob"
+	"log"
 	"math/big"
 	"net"
 	"time"
@@ -13,16 +15,28 @@ type slaveConn struct {
 	cipherBlock cipher.AEAD
 }
 
-func (s slaveConn) Write(data []byte) (n int, err error) {
-	var cipherText []byte
-	s.cipherBlock.Seal(cipherText, nil, data, nil)
-	return s.tcpConn.Write(cipherText)
+func (s *slaveConn) Write(data []byte) (n int, err error) {
+	nonce := createNonce()
+	cipherText := s.cipherBlock.Seal(nil, nonce, data, nil)
+	fullData := append(nonce, cipherText...)
+	//kinda weird but we need to put the length of the varint bytes
+	var varLength = make([]byte, 10)
+	vlqLen := binary.PutUvarint(varLength, uint64(len(fullData)))
+	fullData = append(varLength[:vlqLen], fullData...)
+	fullData = append([]byte{byte(vlqLen)}, fullData...)
+	return s.tcpConn.Write(fullData)
 }
 
-func (s slaveConn) Read(dst []byte) (n int, err error) {
-	var cipherText []byte
+func (s *slaveConn) Read(dst []byte) (n int, err error) {
+	var cipherText = make([]byte, 1<<16)
 	n, err = s.tcpConn.Read(cipherText)
-	s.cipherBlock.Open(dst, nil, cipherText, nil)
+	if err != nil {
+		return
+	}
+	cipherText = cipherText[:n]
+	nonce := cipherText[:12]
+	cipherText = cipherText[12:]
+	s.cipherBlock.Open(dst, nonce, cipherText, nil)
 	return
 }
 
@@ -52,6 +66,7 @@ func newSlaveConn(t *net.TCPConn) (conn *slaveConn, err error) {
 		Y.Sign(),
 	}
 
+	log.Println("Receiving public key")
 	//receive the slave's public key
 	slaveKeyPacket := new(slaveKeyTransfer)
 	err = decoder.Decode(slaveKeyPacket)
@@ -59,6 +74,8 @@ func newSlaveConn(t *net.TCPConn) (conn *slaveConn, err error) {
 		t.Close()
 		return
 	}
+
+	log.Println("Sending public key")
 	//send the public key
 	err = encoder.Encode(keyTransferPacket)
 	if err != nil {
@@ -107,9 +124,16 @@ func (s *slave) waitAndMaintain() {
 }
 
 func newSlave(conn *net.TCPConn, id string, resources []string) (s *slave, err error) {
+	s = new(slave)
+	log.Println("handling slave ID: ", id)
 	s.connection, err = newSlaveConn(conn)
+	if err != nil {
+		log.Fatal(err)
+	}
 	s.id = id
 	s.resources = resources
+	s.nonce = createNonce()
+
 	s.decoder = gob.NewDecoder(s.connection)
 	s.encoder = gob.NewEncoder(s.connection)
 	return
