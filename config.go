@@ -16,9 +16,9 @@ type config struct {
 		PFS       bool
 	}
 	Server struct {
-		HeartbeatInterval,
+		HeartbeatInterval int
 		DiscoveryPort,
-		FrontendPort int
+		FrontendPort string
 	}
 }
 
